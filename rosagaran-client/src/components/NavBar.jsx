@@ -43,18 +43,18 @@ const NavBar = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <NavLink
+              to="/auth/signin"
               className="rounded-full border border-zinc-300 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-700 transition hover:border-zinc-900 hover:text-zinc-900"
             >
               Sign In
-            </button>
-            <button
-              type="button"
+            </NavLink>
+            <NavLink
+              to="/auth/signup"
               className="rounded-full border border-zinc-900 bg-zinc-900 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-50 transition hover:bg-zinc-700"
             >
               Sign Up
-            </button>
+            </NavLink>
           </div>
         </div>
       </div>
