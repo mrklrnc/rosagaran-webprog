@@ -47,8 +47,16 @@ function DashboardPage() {
   const avgAge = averageAge(rows);
 
   return (
-    <>
-      <Typography variant="h4" gutterBottom>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: "#0b8685",
+        minHeight: "calc(100vh - 96px)",
+        borderRadius: 2,
+        color: "#fff",
+      }}
+    >
+      <Typography variant="h4" gutterBottom sx={{ color: "#fff" }}>
         Dashboard
       </Typography>
 
@@ -58,22 +66,51 @@ function DashboardPage() {
         sx={{ mb: 4 }}
         display="flex"
       >
-        <Card sx={{ minWidth: 200 }}>
+        <Card
+          sx={{
+            minWidth: 200,
+            bgcolor: "#fff",
+            color: "text.primary",
+            border: "1px solid rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+          }}
+        >
           <CardContent>
-            <Typography variant="h6">Total Users</Typography>
+            <Typography variant="h6" color="text.secondary">
+              Total Users
+            </Typography>
             <Typography variant="h4">{rows.length}</Typography>
           </CardContent>
         </Card>
-        <Card sx={{ minWidth: 200 }}>
+        <Card
+          sx={{
+            minWidth: 200,
+            bgcolor: "#fff",
+            color: "text.primary",
+            border: "1px solid rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+          }}
+        >
           <CardContent>
-            <Typography variant="h6">Average Age</Typography>
+            <Typography variant="h6" color="text.secondary">
+              Average Age
+            </Typography>
             <Typography variant="h4">{avgAge.toFixed(1)}</Typography>
           </CardContent>
         </Card>
       </Stack>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={3} sx={{ mb: 4 }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Card
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            bgcolor: "#fff",
+            border: "1px solid rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+            p: 2,
+          }}
+        >
           <BarChart
             series={[
               { data: [35, 44, 24, 34], label: "Series 1" },
@@ -88,8 +125,16 @@ function DashboardPage() {
               },
             ]}
           />
-        </Box>
-        <Box sx={{ flexShrink: 0 }}>
+        </Card>
+        <Card
+          sx={{
+            flexShrink: 0,
+            bgcolor: "#fff",
+            border: "1px solid rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+            p: 2,
+          }}
+        >
           <PieChart
             series={[
               {
@@ -103,13 +148,24 @@ function DashboardPage() {
             width={240}
             height={240}
           />
-        </Box>
+        </Card>
       </Stack>
 
       <Typography variant="h5" gutterBottom>
         Users Overview
       </Typography>
-      <Box sx={{ height: 400, width: "100%", mb: 2 }}>
+      <Box
+        sx={{
+          height: 400,
+          width: "100%",
+          mb: 2,
+          bgcolor: "#fff",
+          borderRadius: 2,
+          border: "1px solid rgba(15, 23, 42, 0.08)",
+          overflow: "hidden",
+          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+        }}
+      >
         <DataGrid
           rows={rows}
           columns={columns}
@@ -121,9 +177,39 @@ function DashboardPage() {
           pageSizeOptions={[5]}
           checkboxSelection
           disableRowSelectionOnClick
+          sx={{
+            bgcolor: "#fff",
+            color: "text.primary",
+            border: "none",
+            ".MuiDataGrid-root": {
+              color: "#0f172a",
+            },
+            ".MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f8fafc",
+              borderBottom: "1px solid rgba(15, 23, 42, 0.08)",
+            },
+            ".MuiDataGrid-columnHeader, .MuiDataGrid-columnHeaderTitle": {
+              color: "#0f172a !important",
+            },
+            ".MuiDataGrid-cell": {
+              color: "#0f172a !important",
+              borderBottom: "1px solid rgba(15, 23, 42, 0.08)",
+            },
+            ".MuiDataGrid-footerContainer": {
+              backgroundColor: "#f8fafc",
+              borderTop: "1px solid rgba(15, 23, 42, 0.08)",
+              color: "#0f172a",
+            },
+            ".MuiDataGrid-virtualScrollerRenderZone": {
+              backgroundColor: "#fff",
+            },
+            ".MuiDataGrid-row.Mui-selected": {
+              backgroundColor: "rgba(59, 130, 246, 0.08)",
+            },
+          }}
         />
       </Box>
-    </>
+    </Box>
   );
 }
 

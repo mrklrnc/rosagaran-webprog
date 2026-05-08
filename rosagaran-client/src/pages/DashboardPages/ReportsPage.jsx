@@ -39,9 +39,10 @@ function KpiCard({ title, value, subtitle, sparkData, color }) {
         flex: 1,
         minWidth: { xs: "100%", sm: 200 },
         borderRadius: 2,
-        background: (t) =>
-          alpha(lineColor, t.palette.mode === "dark" ? 0.12 : 0.06),
-        borderColor: (t) => alpha(lineColor, 0.35),
+        bgcolor: "#fff",
+        color: "text.primary",
+        border: "1px solid rgba(15, 23, 42, 0.08)",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
       }}
     >
       <CardContent sx={{ pb: 1.5, "&:last-child": { pb: 1.5 } }}>
@@ -80,11 +81,15 @@ function ChartCard({ title, description, children, sx }) {
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        bgcolor: "#fff",
+        color: "text.primary",
+        border: "1px solid rgba(15, 23, 42, 0.08)",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
         ...sx,
       }}
     >
       <Box sx={{ px: 2.5, pt: 2, pb: 0 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
+        <Typography variant="subtitle1" fontWeight={600} color="text.primary">
           {title}
         </Typography>
         {description ? (
@@ -113,7 +118,17 @@ function ReportsPage() {
       : "0";
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+    <Box
+      sx={{
+        maxWidth: 1200,
+        mx: "auto",
+        p: 3,
+        bgcolor: "#0b8685",
+        minHeight: "calc(100vh - 96px)",
+        borderRadius: 2,
+        color: "#fff",
+      }}
+    >
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -140,7 +155,12 @@ function ReportsPage() {
             variant="outlined"
             color="primary"
           />
-          <Chip label="Sample dataset" size="small" variant="filled" />
+          <Chip
+            label="Sample dataset"
+            size="small"
+            variant="filled"
+            sx={{ bgcolor: "#f8fafc", color: "text.primary" }}
+          />
         </Stack>
       </Stack>
 
@@ -268,19 +288,21 @@ function ReportsPage() {
               ]}
               width={320}
               height={300}
-              slotProps={{
-                legend: {
-                  direction: "column",
-                  position: { vertical: "middle", horizontal: "right" },
-                  padding: 0,
-                },
-              }}
+              slotProps={
+                {
+                  legend: {
+                    direction: "column",
+                    position: { vertical: "middle", horizontal: "right" },
+                    padding: 0,
+                  },
+                }
+              }
             />
           </Box>
         </ChartCard>
       </Stack>
 
-      <Divider sx={{ my: 4 }} />
+      <Divider sx={{ my: 4, borderColor: "rgba(15, 23, 42, 0.08)" }} />
 
       <Typography variant="caption" color="text.secondary" component="p">
         Figures shown are illustrative demo values for layout and chart styling.
