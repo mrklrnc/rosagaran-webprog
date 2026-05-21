@@ -1,20 +1,23 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
-import Button from '../../components/Button';
-import { signIn } from '../../auth/auth';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import Button from "../../components/Button";
+import { signIn } from "../../auth/auth";
+import { loginUser } from "../../services/UserService";
 
-const inputClasses = 
-  'mt-2 w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-zinc-50';
+const inputClasses =
+  "mt-2 w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-zinc-50";
 
-const actionButtonClassName = 'w-full rounded-xl py-3 text-[11px] tracking-[0.2em]';
+const actionButtonClassName = "w-full rounded-xl py-3 text-[11px] tracking-[0.2em]";
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const signupMessage = location.state?.message;
 
   const canSubmit = useMemo(() => {
     return email.trim().length > 0 && password.length >= 8 && !isSubmitting;
@@ -22,19 +25,20 @@ const SignInPage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     const nextEmail = email.trim();
-    if (!nextEmail) return setError('Please enter your email.');
-    if (!nextEmail.includes('@')) return setError('Please enter a valid email.');
-    if (password.length < 8) return setError('Password must be at least 8 characters.');
+    if (!nextEmail) return setError("Please enter your email.");
+    if (!nextEmail.includes("@")) return setError("Please enter a valid email.");
+    if (password.length < 8) return setError("Password must be at least 8 characters.");
 
     setIsSubmitting(true);
     try {
-      signIn({ email: nextEmail, remember });
-      navigate('/', { replace: true });
-    } catch {
-      setError('Unable to sign in right now. Please try again.');
+      const { data } = await loginUser({ email: nextEmail, password });
+      signIn({ user: data.user, token: data.token, remember });
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      setError(error.response?.data?.message || "Unable to sign in right now. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -48,11 +52,13 @@ const SignInPage = () => {
       </p>
 
       <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+        {signupMessage && (
+          <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {signupMessage}
+          </div>
+        )}
         {error && (
-          <div
-            role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-          >
+          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         )}
@@ -105,7 +111,7 @@ const SignInPage = () => {
         </div>
 
         <Button type="submit" variant="primary" className={actionButtonClassName} disabled={!canSubmit}>
-          {isSubmitting ? 'Logging In…' : 'Log In'}
+          {isSubmitting ? "Logging In..." : "Log In"}
         </Button>
 
         <div className="grid gap-3 pt-2 sm:grid-cols-2">
@@ -119,7 +125,7 @@ const SignInPage = () => {
       </form>
 
       <div className="mt-8 border-t border-zinc-200 pt-6 text-sm text-zinc-600">
-        No account yet?{' '}
+        No account yet?{" "}
         <Link to="/auth/signup" className="font-semibold text-zinc-900 transition hover:text-zinc-600">
           Sign Up
         </Link>

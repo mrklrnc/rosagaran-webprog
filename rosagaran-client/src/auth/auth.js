@@ -1,4 +1,8 @@
-const STORAGE_KEY = 'rosagaran.auth.user';
+const STORAGE_KEY = "rosagaran.auth.user";
+
+function normalizeRole(role) {
+  return typeof role === "string" ? role.trim().toLowerCase() : "";
+}
 
 function getStorage(remember) {
   try {
@@ -8,18 +12,21 @@ function getStorage(remember) {
   }
 }
 
-export function signIn({ email, name, remember = false } = {}) {
-  if (!email) throw new Error('Email is required');
+export function signIn({ user, token, remember = false } = {}) {
+  if (!user?.email) throw new Error("User data is required");
 
-  const user = {
-    email,
-    name: name || email.split('@')[0] || 'User',
+  const nextUser = {
+    ...user,
+    type: normalizeRole(user.type),
+    token,
+    remember,
     signedInAt: new Date().toISOString(),
   };
 
+  signOut();
   const storage = getStorage(remember);
-  storage?.setItem(STORAGE_KEY, JSON.stringify(user));
-  return user;
+  storage?.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+  return nextUser;
 }
 
 export function signOut() {
@@ -48,3 +55,12 @@ export function getCurrentUser() {
   return from(window.localStorage) || from(window.sessionStorage);
 }
 
+export function isAuthenticated() {
+  return Boolean(getCurrentUser()?.token);
+}
+
+export function hasRole(user, allowedRoles = []) {
+  if (!allowedRoles.length) return true;
+  const userRole = normalizeRole(user?.type);
+  return allowedRoles.map(normalizeRole).includes(userRole);
+}

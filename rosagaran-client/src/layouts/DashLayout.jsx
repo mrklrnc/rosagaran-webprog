@@ -22,8 +22,10 @@ import ListItemText from "@mui/material/ListItemText";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import ArticleIcon from "@mui/icons-material/Article";
 import Button from "@mui/material/Button";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import { getCurrentUser, signOut } from "../auth/auth";
 
 const drawerWidth = 240;
 
@@ -41,10 +43,17 @@ const dashboardNavItems = [
     icon: AssessmentIcon,
   },
   {
+    label: "Articles",
+    title: "Articles",
+    to: "/dashboard/articles",
+    icon: ArticleIcon,
+  },
+  {
     label: "Users",
     title: "Users",
     to: "/dashboard/users",
     icon: PeopleIcon,
+    roles: ["admin"],
   },
 ];
 
@@ -153,37 +162,29 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const normalizePath = (pathname) =>
-  pathname.replace(/\/$/, "") || "/";
+const normalizePath = (pathname) => pathname.replace(/\/$/, "") || "/";
 
 const getPageTitle = (pathname) => {
   const p = normalizePath(pathname);
-  return (
-    dashboardNavItems.find(({ to }) => normalizePath(to) === p)?.title ??
-    "Welcome"
-  );
+  return dashboardNavItems.find(({ to }) => normalizePath(to) === p)?.title ?? "Welcome";
 };
 
-const isNavActive = (to, pathname) =>
-  normalizePath(pathname) === normalizePath(to);
+const isNavActive = (to, pathname) => normalizePath(pathname) === normalizePath(to);
 
 const DashLayout = () => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const pageTitle = getPageTitle(location.pathname);
   const navigate = useNavigate();
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  const currentUser = getCurrentUser();
+  const visibleNavItems = dashboardNavItems.filter(
+    (item) => !item.roles || item.roles.includes(currentUser?.type)
+  );
+  const pageTitle = getPageTitle(location.pathname);
 
   const handleLogout = () => {
-    navigate("/");
+    signOut();
+    navigate("/auth/signin");
   };
 
   return (
@@ -194,7 +195,7 @@ const DashLayout = () => {
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={open ? handleDrawerClose : handleDrawerOpen}
+            onClick={() => setOpen((prev) => !prev)}
             edge="start"
             sx={{ marginRight: 5 }}
           >
@@ -203,38 +204,29 @@ const DashLayout = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {pageTitle}
           </Typography>
+          <Typography variant="body2" sx={{ mr: 2, opacity: 0.85 }}>
+            {currentUser?.firstName} ({currentUser?.type})
+          </Typography>
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search..."
-              inputProps={{ "aria-label": "search" }}
-            />
+            <StyledInputBase placeholder="Search..." inputProps={{ "aria-label": "search" }} />
           </Search>
-          <Button
-            color="inherit"
-            variant="outlined"
-            onClick={handleLogout}
-            sx={{ textTransform: "uppercase" }}
-          >
+          <Button color="inherit" variant="outlined" onClick={handleLogout} sx={{ textTransform: "uppercase" }}>
             Logout
           </Button>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
+          <IconButton onClick={() => setOpen(false)}>
+            {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </DrawerHeader>
         <Divider />
         <List>
-          {dashboardNavItems.map(({ label, to, icon: Icon }) => (
+          {visibleNavItems.map(({ label, to, icon: Icon }) => (
             <ListItem key={to} disablePadding sx={{ display: "block" }}>
               <ListItemButton
                 component={Link}
