@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import Button from "../../components/Button.jsx";
 import ArticleList from "../../components/ArticleList.jsx";
-import { getStoredArticles } from "../../services/articleStore";
+import { fetchArticles } from "../../services/ArticleService";
 
 const ArticleListPage = () => {
-  const [articles, setArticles] = useState(() => getStoredArticles());
+  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    setArticles(getStoredArticles());
+    fetchArticles()
+      .then((response) => {
+        setArticles(response.data.articles || []);
+      })
+      .catch((error) => {
+        console.error("Failed to load articles", error);
+      });
   }, []);
 
   return (

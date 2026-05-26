@@ -1,17 +1,39 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../../components/Button.jsx";
-import { getStoredArticles } from "../../services/articleStore";
+import { fetchArticleBySlug } from "../../services/ArticleService";
 
 function ArticlePage() {
   const { name } = useParams();
-  const [articles, setArticles] = useState(() => getStoredArticles());
+  const [article, setArticle] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setArticles(getStoredArticles());
-  }, []);
+    setIsLoading(true);
+    fetchArticleBySlug(name)
+      .then((response) => {
+        setArticle(response.data.article || null);
+      })
+      .catch((error) => {
+        console.error("Failed to load article", error);
+        setArticle(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [name]);
 
-  const article = articles.find((item) => item.name === name);
+  if (isLoading) {
+    return (
+      <div className="flex w-full flex-col gap-6">
+        <section className="border-y-2 border-zinc-900 bg-zinc-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="mx-auto max-w-3xl">
+            <h1 className="text-3xl font-bold text-zinc-900">Loading article...</h1>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   if (!article) {
     return (

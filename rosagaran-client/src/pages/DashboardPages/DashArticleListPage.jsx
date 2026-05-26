@@ -3,11 +3,19 @@ import { Box, Button, Modal, Stack, TextField, Typography } from "@mui/material"
 import { DataGrid } from "@mui/x-data-grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import {
+  createArticle,
   deleteArticle,
-  getStoredArticles,
-  slugifyArticleName,
-  upsertArticle,
-} from "../../services/articleStore";
+  fetchArticles,
+  updateArticle,
+} from "../../services/ArticleService";
+
+function slugifyArticleName(value = "") {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 const modalStyle = {
   position: "absolute",
@@ -35,24 +43,27 @@ const emptyArticle = {
 };
 
 const DashArticleListPage = () => {
-  const [articles, setArticles] = useState(() => getStoredArticles());
+  const [articles, setArticles] = useState([]);
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState("");
+  const [editingArticleId, setEditingArticleId] = useState("");
   const [articleForm, setArticleForm] = useState(emptyArticle);
 
-  const loadArticles = () => {
-    setArticles(getStoredArticles());
+  const loadArticles = async () => {
+    const response = await fetchArticles();
+    setArticles(response.data.articles || []);
   };
 
   useEffect(() => {
-    loadArticles();
+    loadArticles().catch((error) => {
+      console.error("Failed to load articles", error);
+    });
   }, []);
 
   const handleClose = () => {
     setOpen(false);
     setIsEditing(false);
-    setEditingName("");
+    setEditingArticleId("");
     setArticleForm(emptyArticle);
   };
 
@@ -66,21 +77,28 @@ const DashArticleListPage = () => {
       ...article,
       content: Array.isArray(article.content) ? article.content.join("\n\n") : "",
     });
-    setEditingName(article.name);
+    setEditingArticleId(article._id);
     setIsEditing(true);
     setOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = articleForm.name || slugifyArticleName(articleForm.title);
-    upsertArticle({ ...articleForm, name }, editingName);
-    loadArticles();
+    const payload = { ...articleForm, name };
+
+    if (isEditing) {
+      await updateArticle(editingArticleId, payload);
+    } else {
+      await createArticle(payload);
+    }
+
+    await loadArticles();
     handleClose();
   };
 
-  const handleDelete = (name) => {
-    deleteArticle(name);
-    loadArticles();
+  const handleDelete = async (id) => {
+    await deleteArticle(id);
+    await loadArticles();
   };
 
   const columns = [
@@ -102,7 +120,7 @@ const DashArticleListPage = () => {
             variant="outlined"
             color="error"
             size="small"
-            onClick={() => handleDelete(params.row.name)}
+            onClick={() => handleDelete(params.row._id)}
           >
             Delete
           </Button>
@@ -130,11 +148,11 @@ const DashArticleListPage = () => {
         </Button>
       </Stack>
 
-      <Box sx={{ height: 520, width: "100%", mt: 3 }}>
+        <Box sx={{ height: 520, width: "100%", mt: 3 }}>
         <DataGrid
           rows={articles}
           columns={columns}
-          getRowId={(row) => row.name}
+          getRowId={(row) => row._id}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
         />
