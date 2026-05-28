@@ -1,4 +1,4 @@
-
+import { useMemo } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -6,6 +6,8 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
+import Button from "@mui/material/Button";
+import GlobalStyles from "@mui/material/GlobalStyles";
 import { useTheme, alpha } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -13,6 +15,7 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
@@ -72,9 +75,10 @@ function KpiCard({ title, value, subtitle, sparkData, color }) {
   );
 }
 
-function ChartCard({ title, description, children, sx }) {
+function ChartCard({ title, description, children, sx, className }) {
   return (
     <Card
+      className={className}
       variant="outlined"
       sx={{
         borderRadius: 2,
@@ -109,6 +113,14 @@ function ReportsPage() {
   const theme = useTheme();
   const primary = theme.palette.primary.main;
   const secondary = theme.palette.secondary?.main ?? "#9c27b0";
+  const preparedAt = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(new Date()),
+    []
+  );
 
   const latestVisitors = trendVisitors[trendVisitors.length - 1];
   const latestSignups = trendSignups[trendSignups.length - 1];
@@ -117,18 +129,68 @@ function ReportsPage() {
       ? ((latestSignups / latestVisitors) * 100).toFixed(1)
       : "0";
 
+  const handlePrintReport = () => {
+    window.print();
+  };
+
   return (
-    <Box
-      sx={{
-        maxWidth: 1200,
-        mx: "auto",
-        p: 3,
-        bgcolor: "#0b8685",
-        minHeight: "calc(100vh - 96px)",
-        borderRadius: 2,
-        color: "#fff",
-      }}
-    >
+    <>
+      <GlobalStyles
+        styles={{
+          "@media print": {
+            "@page": {
+              size: "A4 portrait",
+              margin: "14mm",
+            },
+            "body *": {
+              visibility: "hidden",
+            },
+            ".report-print-root, .report-print-root *": {
+              visibility: "visible",
+            },
+            ".report-print-root": {
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: "100%",
+              maxWidth: "100%",
+              margin: 0,
+              padding: 0,
+              background: "#fff !important",
+              color: "#111827 !important",
+              minHeight: "auto !important",
+              borderRadius: 0,
+            },
+            ".report-print-hide": {
+              display: "none !important",
+            },
+            ".report-print-section": {
+              breakInside: "avoid",
+              pageBreakInside: "avoid",
+            },
+          },
+        }}
+      />
+      <Box
+        className="report-print-root"
+        sx={{
+          maxWidth: 1200,
+          mx: "auto",
+          p: 3,
+          bgcolor: "#0b8685",
+          minHeight: "calc(100vh - 96px)",
+          borderRadius: 2,
+          color: "#fff",
+          "@media print": {
+            p: 0,
+            bgcolor: "#fff",
+            color: "#111827",
+            minHeight: "auto",
+            borderRadius: 0,
+            maxWidth: "100%",
+          },
+        }}
+      >
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -146,6 +208,9 @@ function ReportsPage() {
           <Typography variant="body1" color="text.secondary">
             Charts and data visualization for engagement and regional performance.
           </Typography>
+          <Typography variant="caption" sx={{ display: "block", mt: 1 }} color="text.secondary">
+            Prepared on {preparedAt}
+          </Typography>
         </Box>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Chip
@@ -161,6 +226,26 @@ function ReportsPage() {
             variant="filled"
             sx={{ bgcolor: "#f8fafc", color: "text.primary" }}
           />
+          <Button
+            className="report-print-hide"
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<PrintOutlinedIcon />}
+            onClick={handlePrintReport}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              minWidth: "auto",
+              px: 1.5,
+              py: 0.75,
+              alignSelf: "center",
+              whiteSpace: "nowrap",
+              boxShadow: theme.shadows[2],
+            }}
+          >
+            Save PDF / Print
+          </Button>
         </Stack>
       </Stack>
 
@@ -168,6 +253,7 @@ function ReportsPage() {
         direction={{ xs: "column", md: "row" }}
         spacing={2}
         sx={{ mb: 3 }}
+        className="report-print-section"
       >
         <KpiCard
           title="Visitors (Jun)"
@@ -198,6 +284,7 @@ function ReportsPage() {
         title="Traffic & conversion trend"
         description="Monthly visitors compared with completed sign-ups."
         sx={{ mb: 3 }}
+        className="report-print-section"
       >
         <LineChart
           height={320}
@@ -231,6 +318,7 @@ function ReportsPage() {
         direction={{ xs: "column", lg: "row" }}
         spacing={3}
         alignItems="stretch"
+        className="report-print-section"
       >
         <ChartCard
           title="Regional totals"
@@ -308,7 +396,8 @@ function ReportsPage() {
         Figures shown are illustrative demo values for layout and chart styling.
         Wire these components to your analytics API when you connect real data.
       </Typography>
-    </Box>
+      </Box>
+    </>
   );
 }
 
