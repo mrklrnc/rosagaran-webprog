@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Button from "../../components/Button";
 import { signIn } from "../../auth/auth";
 import { createUser, loginUser } from "../../services/UserService";
+import { validateUserForm } from "../../utils/userValidation";
 
 const inputClasses =
   "mt-2 w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-zinc-50";
@@ -17,7 +18,6 @@ const SignUpPage = () => {
   const [username, setUsername] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [address, setAddress] = useState("");
-  const [accountType, setAccountType] = useState("editor");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,13 +28,12 @@ const SignUpPage = () => {
       lastName.trim().length > 0 &&
       email.trim().length > 0 &&
       username.trim().length > 0 &&
-        contactNumber.trim().length > 0 &&
-        address.trim().length > 0 &&
-      accountType.trim().length > 0 &&
+      contactNumber.trim().length > 0 &&
+      address.trim().length > 0 &&
       password.length >= 8 &&
       !isSubmitting
     );
-  }, [accountType, address, contactNumber, email, firstName, isSubmitting, lastName, password, username]);
+  }, [address, contactNumber, email, firstName, isSubmitting, lastName, password, username]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -52,9 +51,17 @@ const SignUpPage = () => {
     if (!nextEmail) return setError("Please enter your email.");
     if (!nextEmail.includes("@")) return setError("Please enter a valid email.");
     if (!nextUsername) return setError("Please enter a username.");
-    if (!nextContactNumber) return setError("Please enter a contact number.");
     if (!nextAddress) return setError("Please enter your address.");
-    if (password.length < 8) return setError("Password must be at least 8 characters.");
+
+    const validationErrors = validateUserForm({
+      contactNumber: nextContactNumber,
+      username: nextUsername,
+      password,
+    });
+
+    if (validationErrors.contactNumber) return setError(validationErrors.contactNumber);
+    if (validationErrors.username) return setError(validationErrors.username);
+    if (validationErrors.password) return setError(validationErrors.password);
 
     setIsSubmitting(true);
     try {
@@ -65,22 +72,12 @@ const SignUpPage = () => {
         gender: "Prefer not to say",
         contactNumber: nextContactNumber,
         email: nextEmail,
-        type: accountType,
+        type: "editor",
         username: nextUsername,
         password,
         address: nextAddress,
         isActive: true,
       });
-
-      if (accountType === "viewer") {
-        navigate("/auth/signin", {
-          replace: true,
-          state: {
-            message: "Viewer account created. Viewer accounts cannot access the dashboard, so please use admin or editor if you need dashboard login.",
-          },
-        });
-        return;
-      }
 
       const { data } = await loginUser({ email: nextEmail, password });
       signIn({ user: data.user, token: data.token });
@@ -193,25 +190,6 @@ const SignUpPage = () => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
           />
-        </div>
-
-        <div>
-          <label htmlFor="signup-role" className="text-sm font-medium text-zinc-700">
-            Account Type
-          </label>
-          <select
-            id="signup-role"
-            className={inputClasses}
-            value={accountType}
-            onChange={(e) => setAccountType(e.target.value)}
-          >
-            <option value="admin">Admin</option>
-            <option value="editor">Editor</option>
-            <option value="viewer">Viewer</option>
-          </select>
-          <p className="mt-2 text-xs leading-5 text-zinc-500">
-            Viewer accounts can be created, but they cannot log in to the dashboard.
-          </p>
         </div>
 
         <div>
